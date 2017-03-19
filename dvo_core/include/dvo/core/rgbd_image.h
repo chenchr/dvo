@@ -39,7 +39,7 @@ struct RgbdImage
 {
 public:
 
-  typedef Eigen::Matrix<float, 4, Eigen::Dynamic, Eigen::ColMajor> PointCloud;
+  typedef Eigen::Matrix<float, 4, Eigen::Dynamic, Eigen::ColMajor> PointCloud; //定义成4行的形式为了后面transform点云的时候可以直接用矩阵乘法,相应地也设置矩阵为列优先存储
 
   cv::Mat intensity;
   cv::Mat intensity_dx;

@@ -141,9 +141,9 @@ void RgbdImagePyramid::compute(const size_t num_levels)
 
   for(size_t idx = first; idx < num_levels; ++idx)
   {
-    pyrDownMeanSmooth<IntensityType>(levels[idx - 1].intensity, levels[idx].intensity);
+    pyrDownMeanSmooth<IntensityType>(levels[idx - 1].intensity, levels[idx].intensity);  //灰度图用均值滤波
     //pyrDownMeanSmoothIgnoreInvalid<float>(levels[idx - 1].depth, levels[idx].depth);
-    pyrDownMedianSmooth<float>(levels[idx - 1].depth, levels[idx].depth);
+    pyrDownMedianSmooth<float>(levels[idx - 1].depth, levels[idx].depth);  //深度图用中值滤波
     levels[idx].initialize();
   }
 }
@@ -322,6 +322,7 @@ void RgbdImage::buildPointCloud(const IntrinsicMatrix& intrinsics)
 
     int idx = 0;
 
+      //先算出方向向量
     for(size_t y = 0; y < height; ++y)
     {
       for(size_t x = 0; x < width; ++x, ++idx)
@@ -340,6 +341,7 @@ void RgbdImage::buildPointCloud(const IntrinsicMatrix& intrinsics)
   const float* depth_ptr = depth.ptr<float>();
   int idx = 0;
 
+    //再乘深度得到点的三维坐标
   for(size_t y = 0; y < height; ++y)
   {
     for(size_t x = 0; x < width; ++x, ++depth_ptr, ++idx)
@@ -352,6 +354,9 @@ void RgbdImage::buildPointCloud(const IntrinsicMatrix& intrinsics)
   pointcloud_requires_build_ = false;
 }
 
+    // inverse warping
+    // transformation is the transformation from reference to this image
+    //看lucas 20 years on那篇论文,(35)式,变量是x,T(x)和I(W(x;p))的对应关系
 void RgbdImage::warpIntensity(const AffineTransform& transformationd, const PointCloud& reference_pointcloud, const IntrinsicMatrix& intrinsics, RgbdImage& result, PointCloud& transformed_pointcloud)
 {
   Eigen::Affine3f transformation = transformationd.cast<float>();
@@ -411,6 +416,7 @@ void RgbdImage::warpIntensity(const AffineTransform& transformationd, const Poin
   result.initialize();
 }
 
+    //这个是正常理解的warp,即在一个transform下的视角看到的image,有深度,算出3d,再加一个transform转换到另一个视角下看到的深度
 void RgbdImage::warpDepthForward(const AffineTransform& transformationx, const IntrinsicMatrix& intrinsics, RgbdImage& result, cv::Mat_<cv::Vec3d>& cloud)
 {
   Eigen::Affine3d transformation = transformationx.cast<double>();
@@ -461,6 +467,7 @@ void RgbdImage::warpDepthForward(const AffineTransform& transformationx, const I
   result.initialize();
 }
 
+    //这个是正常理解的warp,即在一个transform下的视角看到的image,有深度,算出3d,再加一个transform转换到另一个视角下看到的image
 void RgbdImage::warpIntensityForward(const AffineTransform& transformationx, const IntrinsicMatrix& intrinsics, RgbdImage& result, cv::Mat_<cv::Vec3d>& cloud)
 {
   Eigen::Affine3d transformation = transformationx.cast<double>();

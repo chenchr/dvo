@@ -75,8 +75,9 @@ class NormalEquationsLeastSquares : public LeastSquaresInterface
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
+    //A * dietaP = b
   OptimizedSelfAdjointMatrix6x6f A_opt;
-  Matrix6x6 A;
+  Matrix6x6 A; //这个是hessian矩阵
   Vector6 b;
 
   double error;

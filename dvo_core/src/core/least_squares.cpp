@@ -49,7 +49,7 @@ void dvo::core::NormalEquationsLeastSquares::update(const dvo::core::Vector6& J,
   A_opt.rankUpdate(J, factor);
   //MathSse<Sse::Enabled, NumType>::addOuterProduct(A, J, factor);
   //A += J * J.transpose() * factor;
-  MathSse<Sse::Enabled, NumType>::add(b, J, -res * factor); // not much difference :(
+  MathSse<Sse::Enabled, NumType>::add(b, J, -res * factor); // not much difference :(   //注意 这里有个负号
   //b -= J * res * factor;
 
   error += res * res * factor;

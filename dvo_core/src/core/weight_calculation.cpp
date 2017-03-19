@@ -31,8 +31,8 @@ namespace dvo
 namespace core
 {
 
-const float TDistributionScaleEstimator::INITIAL_SIGMA = 5.0f;
-const float TDistributionScaleEstimator::DEFAULT_DOF = 5.0f;
+const float TDistributionScaleEstimator::INITIAL_SIGMA = 5.0f;  //标准差的初始估计值,后面会迭代求
+const float TDistributionScaleEstimator::DEFAULT_DOF = 5.0f;    //t分布中的v
 
 TDistributionScaleEstimator::TDistributionScaleEstimator(const float dof) :
     initial_sigma(INITIAL_SIGMA)
@@ -45,6 +45,7 @@ void TDistributionScaleEstimator::configure(const float& param)
   dof = param;
 }
 
+//计算t分布的方差
 float TDistributionScaleEstimator::compute(const cv::Mat& errors) const
 {
   float initial_lamda = 1.0f / (initial_sigma * initial_sigma);

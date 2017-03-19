@@ -60,7 +60,7 @@ DenseTracker::DenseTracker(IntrinsicMatrix& intrinsics, const Config& cfg) :
     weight_calculation_(),
     itctx_(cfg)
 {
-  intrinsics_.push_back(intrinsics);
+  intrinsics_.push_back(intrinsics);  //这是第一个push_back进去的
 
   configure();
 }
@@ -69,8 +69,10 @@ void DenseTracker::configure()
 {
   assert(cfg.IsSane());
 
-  IntrinsicMatrix current = intrinsics_.back();
+  IntrinsicMatrix current = intrinsics_.back(); //看63行,然后后面65行调用了
 
+
+  // the scale the intrinsics to adapt image pyramid?
   for(size_t idx = intrinsics_.size(); idx <= cfg.FirstLevel; ++idx)
   {
     current.scale(0.5f);
@@ -132,8 +134,8 @@ bool DenseTracker::match(RgbdImagePyramid& reference, RgbdImagePyramid& current,
 
   bool accept = true;
 
-  static stopwatch_collection sw_level(5, "l", 100);
-  static stopwatch_collection sw_it(5, "it@l", 500);
+  static stopwatch_collection sw_level(5, "l", 100); //记录在金字塔的每一层消耗的时间
+  static stopwatch_collection sw_it(5, "it@l", 500); //记录每一次迭代消耗的时间
 
   for(itctx_.Level = cfg.FirstLevel; itctx_.Level >= cfg.LastLevel; --itctx_.Level)
   {
@@ -238,6 +240,7 @@ bool DenseTracker::match(RgbdImagePyramid& reference, RgbdImagePyramid& current,
   if(itctx_.IterationsExceeded())
   {
     estimate.update() = inc.matrix().cast<NumType>() * estimate().matrix();
+      //least_squares.cpp中update函数的残差多加了负号,本来这个算法求出来的dietaP要反向的,但是由于已经有了负号,所以不需要inverse
   }
 
   // log reason for termination on last level
@@ -250,6 +253,7 @@ bool DenseTracker::match(RgbdImagePyramid& reference, RgbdImagePyramid& current,
     last_xi_ = Sophus::SE3(estimate().rotation().cast<double>(), estimate().translation().cast<double>());
   }
 
+    //求出来的transformation本来是从ref到cur的transform,这里求了inverse,设想这样的情景,已经有了ref的灰度和深度,则只需要cur的灰度就可以求transform
   transformation = estimate().inverse().cast<double>();
 
   return success;
@@ -339,6 +343,7 @@ void DenseTracker::computeLeastSquaresEquationsInverseCompositional(dvo::core::R
   // compute residuals
   residuals = cur_warped.intensity - ref.intensity;
 
+    //只是做了一系列的数据准备工作,将方程两边的矩阵都算了,但是由于有gauss-newton或者L-M等方法对hessian矩阵不同的处理,因此还没有解方程
   computeLeastSquaresEquationsGeneric(residuals, ref_dx, ref_dy, ref.pointcloud, ls);
 }
 
