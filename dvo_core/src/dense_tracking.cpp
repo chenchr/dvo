@@ -276,6 +276,8 @@ void DenseTracker::computeLeastSquaresEquationsForwardAdditive(dvo::core::RgbdIm
   // compute residuals
   residuals = cur_warped.intensity - ref.intensity;
 
+    //这里使用了ref_transformed,这个参数是用于求warp对p的导数,即affine transform对李代数的导数,这里用ref_transformed和论文是一致的
+    //即在p处,而不是p=0处求导的
   computeLeastSquaresEquationsGeneric(residuals, cur_dx, cur_dy, ref_transformed, ls);
 }
 
@@ -295,6 +297,8 @@ void DenseTracker::computeLeastSquaresEquationsForwardCompositional(dvo::core::R
   // compute residuals
   residuals = cur_warped.intensity - ref.intensity;
 
+    //这里使用了ref.pointcloud,这个参数是用于求warp对p的导数,即affine transform对李代数的导数,这里用ref.pointcloud和论文是一致的
+    //即在p=0处求导的
   computeLeastSquaresEquationsGeneric(residuals, cur_dx, cur_dy, ref.pointcloud, ls);
 }
 
@@ -330,7 +334,7 @@ void DenseTracker::computeLeastSquaresEquationsForwardCompositionalESM(dvo::core
 void DenseTracker::computeLeastSquaresEquationsInverseCompositional(dvo::core::RgbdImage& ref, dvo::core::RgbdImage& cur, const dvo::core::IntrinsicMatrix& intrinsics, const dvo::core::AffineTransform& transformation, dvo::core::LeastSquaresInterface& ls)
 {
   RgbdImage cur_warped;
-  cv::Mat residuals, ref_dx, ref_dy;
+  cv::Mat residuals, ref_dx, ref_dy;  //inverse compostional 的图像梯度在ref image即T上求
 
   ref.buildPointCloud(intrinsics);
   cur.warpIntensitySse(transformation, ref.pointcloud, intrinsics, cur_warped);
@@ -344,6 +348,8 @@ void DenseTracker::computeLeastSquaresEquationsInverseCompositional(dvo::core::R
   residuals = cur_warped.intensity - ref.intensity;
 
     //只是做了一系列的数据准备工作,将方程两边的矩阵都算了,但是由于有gauss-newton或者L-M等方法对hessian矩阵不同的处理,因此还没有解方程
+    //这里使用了ref.pointcloud,这个参数是用于求warp对p的导数,即affine transform对李代数的导数,这里用ref.pointcloud和论文是一致的
+    //即在p=0处求导的
   computeLeastSquaresEquationsGeneric(residuals, ref_dx, ref_dy, ref.pointcloud, ls);
 }
 
