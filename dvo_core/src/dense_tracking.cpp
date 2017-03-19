@@ -269,6 +269,7 @@ void DenseTracker::computeLeastSquaresEquationsForwardAdditive(dvo::core::RgbdIm
   cur.warpIntensitySse(transformation, ref.pointcloud, intrinsics, cur_warped, ref_transformed);
 
   // compute I_{2,x} and I_{2,y}
+  //论文中不是这样算的,论文先算出最开始的I的梯度,然后再warp过去
   cur_warped.calculateIntensityDerivatives();
   cur_dx = cur_warped.intensity_dx * intrinsics.fx();
   cur_dy = cur_warped.intensity_dy * intrinsics.fy();
